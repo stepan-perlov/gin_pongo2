@@ -1,10 +1,11 @@
-package render
+package gin_pongo2
 
 import (
 	"net/http"
 	"path"
 
 	"github.com/flosch/pongo2"
+	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/render"
 )
 
@@ -23,8 +24,6 @@ type (
 		Name     string
 		Data     interface{}
 	}
-
-	Context pongo2.Context
 )
 
 func NewProduction(path string) *PongoProduction {
@@ -61,7 +60,18 @@ func (p PongoDebug) Instance(name string, data interface{}) render.Render {
 }
 
 func (p Pongo) Render(w http.ResponseWriter) error {
-	ctx := pongo2.Context(p.Data.(Context))
+	ctx := pongo2.Context(p.Data.(pongo2.Context))
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	return p.Template.ExecuteWriter(ctx, w)
+}
+
+func MakeContext(c *gin.Context, keys []string, data map[string]interface{}) pongo2.Context {
+	for _, key := range keys {
+		_, exists := data[key]
+		value, ok := c.Get(key)
+		if !exists && ok {
+			data[key] = value
+		}
+	}
+	return data
 }

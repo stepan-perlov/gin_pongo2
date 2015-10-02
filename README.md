@@ -1,4 +1,4 @@
-# gin-pongo2
+# gin_pongo2
 pongo2 middleware for Gin framework.
 
 ##Example:
@@ -9,7 +9,8 @@ import (
     "os"
 
     "github.com/gin-gonic/gin"
-    "github.com/rainbowism/gin-pongo2"
+    "github.com/stepan-perlov/gin_pongo2"
+    "github.com/flosch/pongo2"
 )
 
 func main() {
@@ -27,20 +28,26 @@ func main() {
         gin.SetMode(gin.ReleaseMode)
     }
 
-    router := gin.New()
-    router.Use(gin.Recovery())
+    engine := gin.New()
+    engine.Use(gin.Recovery())
 
     if gin.IsDebugging() {
-        router.HTMLRender = render.NewDebug("resources")
+        engine.HTMLRender = gin_pongo2.NewDebug("resources")
     } else {
-        router.HTMLRender = render.NewProduction("resources")
+        engine.HTMLRender = gin_pongo2.NewProduction("resources")
     }
 
-    router.Static("/static", "resources/static")
-    router.GET("/", func(c *gin.Context) {
-        c.HTML(http.StatusOK, "index.tpl", render.Context{"title": "Gin-pongo2!"})
+    engine.Static("/static", "resources/static")
+    engine.GET("/", func(c *gin.Context) {
+        c.HTML(http.StatusOK, "index.tpl", pongo2.Context{"title": "Gin-pongo2!"})
+    })
+    engine.GET("/other", func(c *gin.Context) {
+        # if this key not exists in third parameter
+        # gin_pongo2.MakeContext will copy key1, key2
+        # from gin.Context to pongo2.Context using gin.Get function
+        c.HTML(http.StatusOK, "other.tpl", gin_pongo2.MakeContext(c, []string{'key1', key2}, map[string]interface{}{}))
     })
 
-    router.Run(":3000")
+    engine.Run(":3000")
 }
 ```
