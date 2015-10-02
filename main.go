@@ -65,12 +65,13 @@ func (p Pongo) Render(w http.ResponseWriter) error {
 	return p.Template.ExecuteWriter(ctx, w)
 }
 
-func MakeContext(c *gin.Context, keys []string, data map[string]interface{}) pongo2.Context {
-	for _, key := range keys {
-		_, exists := data[key]
-		value, ok := c.Get(key)
-		if !exists && ok {
-			data[key] = value
+func MakeContext(c *gin.Context, data map[string]interface{}) pongo2.Context {
+	if c.Keys != nil {
+		for key, value := range c.Keys {
+			if _, exists := data[key]; !exists {
+				data[key] = value
+			}
+
 		}
 	}
 	return data
