@@ -26,11 +26,15 @@ type (
 	}
 )
 
+var rootPath string
+
 func NewProduction(path string) *PongoProduction {
+	rootPath = path
 	return &PongoProduction{map[string]*pongo2.Template{}, path}
 }
 
 func NewDebug(path string) *PongoDebug {
+	rootPath = path
 	return &PongoDebug{path}
 }
 
@@ -63,16 +67,4 @@ func (p Pongo) Render(w http.ResponseWriter) error {
 	ctx := pongo2.Context(p.Data.(pongo2.Context))
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	return p.Template.ExecuteWriter(ctx, w)
-}
-
-func MakeContext(c *gin.Context, data map[string]interface{}) pongo2.Context {
-	if c.Keys != nil {
-		for key, value := range c.Keys {
-			if _, exists := data[key]; !exists {
-				data[key] = value
-			}
-
-		}
-	}
-	return data
 }
